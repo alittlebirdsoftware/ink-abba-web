@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >
-  InkAbba website backend: lead storage, photo uploads, email sending identity,
+  InkAbba website backend: lead and quote storage, photo uploads, email sending identity,
   the role the Amplify-hosted Next.js app runs as, and an error alarm.
   The Amplify app itself is created in the console (it needs a Git connection).
 
@@ -49,6 +49,10 @@ Resources:
         PointInTimeRecoveryEnabled: true
       SSESpecification:
         SSEEnabled: true
+      # Sign-in links and sessions carry a `ttl` and are removed automatically.
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
 
   UploadsBucket:
     Type: AWS::S3::Bucket
@@ -125,7 +129,12 @@ Resources:
             Statement:
               - Sid: StoreLeads
                 Effect: Allow
-                Action: [dynamodb:PutItem, dynamodb:UpdateItem]
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Query
                 Resource: !GetAtt LeadsTable.Arn
               - Sid: Uploads
                 Effect: Allow
@@ -135,6 +144,16 @@ Resources:
                 Effect: Allow
                 Action: ses:SendEmail
                 Resource: !Sub "arn:${AWS::Partition}:ses:${AWS::Region}:${AWS::AccountId}:identity/*"
+              # Text-message alerts to the owner. Publishing to a phone number
+              # has no resource ARN, so allow "*" and deny every topic.
+              - Sid: TextOwner
+                Effect: Allow
+                Action: sns:Publish
+                Resource: "*"
+              - Sid: NoTopicPublish
+                Effect: Deny
+                Action: sns:Publish
+                Resource: !Sub "arn:${AWS::Partition}:sns:*:*:*"
 
   AlarmTopic:
     Type: AWS::SNS::Topic

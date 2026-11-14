@@ -1,8 +1,6 @@
 import { facts, site } from "@/lib/site";
 import type { RequestType } from "./requests";
 
-export type Faq = { q: string; a: string };
-
 export type Service = {
   slug: string;
   eyebrow: string;
@@ -16,13 +14,7 @@ export type Service = {
   /** "What to send us" checklist: specific to each service. */
   send: string[];
   sections: { heading: string; body: string }[];
-  faqs: Faq[];
 };
-
-/** Keeps only entries whose answer is known, so unanswered questions never ship. */
-function known(entries: (Faq | null)[]): Faq[] {
-  return entries.filter((entry): entry is Faq => entry !== null);
-}
 
 const brands = site.supplyBrands.join(", ");
 const areas =
@@ -60,20 +52,6 @@ export const services: Service[] = [
         ? [{ heading: "Warranty", body: facts.supplyWarranty }]
         : []),
     ],
-    faqs: known([
-      {
-        q: "Do I need to know the cartridge number?",
-        a: "No. The printer model or a clear photo of the cartridge label is enough for us to identify it.",
-      },
-      {
-        q: "Can I compare OEM and compatible options?",
-        a: "Yes. Choose \"Show me both\" on the quote request and we'll price each option available for your machine.",
-      },
-      facts.returnsPolicy ? { q: "Can I return supplies?", a: facts.returnsPolicy } : null,
-      facts.walkIn
-        ? null
-        : { q: "Can I pick up my order?", a: "No. Orders ship directly to your delivery address; we don't have a retail counter." },
-    ]),
   },
   {
     slug: "printer-repair",
@@ -108,20 +86,6 @@ export const services: Service[] = [
         ? [{ heading: "Our technicians", body: `Our technicians hold: ${facts.certifications.join(", ")}.` }]
         : []),
     ],
-    faqs: known([
-      { q: "Where do you offer repair service?", a: areas },
-      facts.diagnosticFee ? { q: "How much does a diagnosis cost?", a: facts.diagnosticFee } : null,
-      facts.walkIn
-        ? null
-        : {
-            q: "Can I bring my printer to you?",
-            a: "We don't have a walk-in repair counter. Send a request or call first and we'll arrange service with you.",
-          },
-      {
-        q: "Which brands do you repair?",
-        a: `${brands} and others. Tell us the model and we'll confirm.`,
-      },
-    ]),
   },
   {
     slug: "labels-ribbons",
@@ -148,16 +112,6 @@ export const services: Service[] = [
       {
         heading: "Choosing a ribbon",
         body: "Wax ribbons suit paper labels. Wax-resin holds up better against smudging and scratching. Resin is for synthetic labels that face heat, moisture or chemicals. If you're unsure, a photo of the current ribbon box usually answers it.",
-      },
-    ],
-    faqs: [
-      {
-        q: "I don't know which ribbon I need.",
-        a: "Send the printer model and what the labels are used for. A photo of the current label or ribbon packaging helps.",
-      },
-      {
-        q: "Can you help with refrigerated or damp environments?",
-        a: "Yes. Describe the temperature, the surface and the exposure, and we'll suggest materials suited to it.",
       },
     ],
   },
@@ -189,13 +143,6 @@ export const services: Service[] = [
         body: "Wait until we've confirmed eligibility and the arrangements with you before sending anything.",
       },
     ],
-    faqs: known([
-      facts.recyclingTerms ? { q: "Is there a fee, or will I receive credit?", a: facts.recyclingTerms } : null,
-      {
-        q: "Does opened toner qualify for buyback?",
-        a: "It depends on the cartridge and its condition. Tell us what you have and we'll check.",
-      },
-    ]),
   },
   {
     slug: "business-accounts",
@@ -225,17 +172,6 @@ export const services: Service[] = [
       },
       ...(facts.paymentTerms ? [{ heading: "Payment terms", body: facts.paymentTerms }] : []),
     ],
-    faqs: known([
-      {
-        q: "Do you guarantee savings?",
-        a: "No. Pricing depends on the products and quantities. We give you a quote and you compare it against what you pay today.",
-      },
-      facts.paymentTerms ? { q: "Do you offer payment terms?", a: facts.paymentTerms } : null,
-      {
-        q: "Can you supply more than one location?",
-        a: "Tell us the locations on the request and we'll confirm what we can arrange for each.",
-      },
-    ]),
   },
   {
     slug: "equipment",
@@ -263,14 +199,6 @@ export const services: Service[] = [
         body: "If your current machine is giving you trouble, we can evaluate it first and tell you whether a repair makes more sense than a replacement.",
       },
     ],
-    faqs: known([
-      facts.walkIn
-        ? null
-        : {
-            q: "Do you have a showroom?",
-            a: "No. Tell us what you need and we'll send options, condition details and pricing.",
-          },
-    ]),
   },
 ];
 

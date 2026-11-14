@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import type { FieldDef, RequestDef } from "@/content/requests";
-import { site } from "@/lib/site";
+import { replyExpectation, site } from "@/lib/site";
 import { track } from "@/lib/track";
 import {
   emptyContact,
@@ -83,7 +83,7 @@ async function uploadFile(file: File): Promise<string | null> {
   }
 }
 
-export function RequestForm({ def, replyTime }: { def: RequestDef; replyTime: string | null }) {
+export function RequestForm({ def }: { def: RequestDef }) {
   const pathname = usePathname();
   const [step, setStep] = useState<Step>("details");
   const [details, setDetails] = useState<Record<string, string>>({});
@@ -160,8 +160,8 @@ export function RequestForm({ def, replyTime }: { def: RequestDef; replyTime: st
           Thanks, {contact.name.split(" ")[0]}. We have your request.
         </h2>
         <p className="mt-3 leading-relaxed text-muted">
-          {replyTime ? `We reply ${replyTime}, ` : "We'll reply "}
-          at {contact.email}. Nothing is ordered or scheduled until you approve it.
+          {replyExpectation()} We&apos;ll write to {contact.email}. Nothing is ordered or scheduled until you
+          approve it.
         </p>
         {attachmentSkipped ? (
           <p className="mt-3 rounded-lg bg-mist p-3 text-sm">
@@ -250,7 +250,7 @@ export function RequestForm({ def, replyTime }: { def: RequestDef; replyTime: st
   return (
     <form ref={formRef} onSubmit={toReview} noValidate className="rounded-2xl border border-line p-6 sm:p-8">
       <fieldset className="space-y-5">
-        <legend className="text-xl font-bold">What do you need?</legend>
+        <legend className="text-xl font-bold">Your request</legend>
         {def.fields.map(control)}
         {def.attachment ? (
           <Field

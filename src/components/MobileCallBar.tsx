@@ -1,15 +1,16 @@
 import Link from "next/link";
+import { site } from "@/lib/site";
 import { PhoneLink } from "./PhoneLink";
 
-/** Keeps a call button and a quote button on screen on phones. */
+/** Keeps the phone number and a help button on screen on phones, on every page. */
 export function MobileCallBar() {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-2 gap-2 border-t border-line bg-white p-2 lg:hidden">
+    <div className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-[1.5fr_1fr] gap-2 border-t border-line bg-white p-2 lg:hidden print:hidden">
       <PhoneLink
         location="mobile_bar"
-        className="flex min-h-12 items-center justify-center rounded-lg border border-brand font-semibold text-brand"
+        className="flex min-h-12 items-center justify-center whitespace-nowrap rounded-lg border border-brand text-[15px] font-semibold text-brand"
       >
-        Call us
+        Call {site.phone.display}
       </PhoneLink>
       <Link
         href="/find-help"

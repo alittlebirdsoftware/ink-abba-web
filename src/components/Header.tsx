@@ -15,7 +15,7 @@ export function Header() {
   useEffect(() => setOpen(false), [pathname]);
 
   return (
-    <header className="border-b border-line bg-white">
+    <header className="border-b border-line bg-white print:hidden">
       <div className={`${container} flex h-16 items-center justify-between gap-4`}>
         <Link href="/" className="text-2xl font-extrabold tracking-tight" aria-label={`${site.name} home`}>
           Ink<span className="text-brand">Abba</span>

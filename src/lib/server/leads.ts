@@ -1,17 +1,17 @@
-import { appendFile, mkdir } from "node:fs/promises";
-import path from "node:path";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { randomBytes } from "node:crypto";
 import type { RequestType } from "@/content/requests";
 import type { Contact } from "@/lib/validate";
-import { clientOptions, config } from "./config";
+import { fields, store, type Item } from "./store";
+
+export const LEAD_STATUSES = ["new", "contacted", "quoted", "won", "lost"] as const;
+export type LeadStatus = (typeof LEAD_STATUSES)[number];
 
 export type Lead = {
+  /** Starts with the time it was created, so ids sort oldest to newest. */
   id: string;
   createdAt: string;
   type: RequestType;
-  /** new → contacted → qualified → won / lost. Updated by whoever works the lead. */
-  status: "new";
+  status: LeadStatus;
   contact: Contact;
   details: Record<string, string>;
   attachmentKey: string | null;
@@ -20,42 +20,39 @@ export type Lead = {
   notified: boolean;
 };
 
-let client: DynamoDBDocumentClient | null = null;
-function db() {
-  client ??= DynamoDBDocumentClient.from(new DynamoDBClient(clientOptions), {
-    marshallOptions: { removeUndefinedValues: true },
-  });
-  return client;
+const PK = "LEAD";
+
+export function newLeadId(now = Date.now()) {
+  return `${now.toString(36).padStart(9, "0")}${randomBytes(5).toString("hex")}`;
 }
 
-/** One partition, sorted by time, so listing leads newest-first is a single query. */
-const key = (lead: Pick<Lead, "id" | "createdAt">) => ({ pk: "LEAD", sk: `${lead.createdAt}#${lead.id}` });
+export const isLeadId = (value: string) => /^[0-9a-z]{19}$/.test(value);
+
+const toItem = (lead: Lead): Item => ({ pk: PK, sk: lead.id, ...lead });
+const fromItem = (item: Item) => fields<Lead>(item);
 
 /**
- * Stores the lead. This runs before any email is sent: if the notification
- * fails, the lead still exists and can be followed up.
+ * Stores the lead. The request API calls this before any email is sent: if
+ * the notification fails, the lead still exists and can be followed up.
  */
 export async function saveLead(lead: Lead): Promise<void> {
-  if (config.leadsTable) {
-    await db().send(new PutCommand({ TableName: config.leadsTable, Item: { ...key(lead), ...lead } }));
-    return;
-  }
-  if (config.isProduction && process.env.LEADS_ALLOW_LOCAL !== "1") {
-    throw new Error("LEADS_TABLE is not set; refusing to drop a lead in production.");
-  }
-  const dir = path.join(process.cwd(), ".data");
-  await mkdir(dir, { recursive: true });
-  await appendFile(path.join(dir, "leads.jsonl"), `${JSON.stringify(lead)}\n`);
+  await store().put(toItem(lead));
 }
 
-export async function markNotified(lead: Lead): Promise<void> {
-  if (!config.leadsTable) return;
-  await db().send(
-    new UpdateCommand({
-      TableName: config.leadsTable,
-      Key: key(lead),
-      UpdateExpression: "SET notified = :true",
-      ExpressionAttributeValues: { ":true": true },
-    }),
-  );
+export async function getLead(id: string): Promise<Lead | null> {
+  if (!isLeadId(id)) return null;
+  const item = await store().get(PK, id);
+  return item ? fromItem(item) : null;
+}
+
+export async function listLeads(): Promise<Lead[]> {
+  return (await store().list(PK, { newestFirst: true })).map(fromItem);
+}
+
+export async function updateLead(id: string, changes: Partial<Pick<Lead, "status" | "notified">>): Promise<Lead | null> {
+  const lead = await getLead(id);
+  if (!lead) return null;
+  const updated = { ...lead, ...changes };
+  await saveLead(updated);
+  return updated;
 }

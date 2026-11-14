@@ -1,10 +1,18 @@
 import Link from "next/link";
 import { PhoneLink } from "@/components/PhoneLink";
+import { Reviews } from "@/components/Reviews";
 import { ButtonLink, Eyebrow, container } from "@/components/ui";
 import { services } from "@/content/services";
-import { facts, site } from "@/lib/site";
+import { getGoogleReviews } from "@/lib/server/reviews";
+import { facts, replyPromise, site } from "@/lib/site";
 
 const paths = [
+  {
+    need: "My printer is down",
+    detail: "Tell us the model, the problem and your ZIP code.",
+    cta: "Request printer repair",
+    href: "/request/repair",
+  },
   {
     need: "I need toner or ink",
     detail: "Send a cartridge number, a printer model or a photo.",
@@ -12,10 +20,10 @@ const paths = [
     href: "/request/supplies",
   },
   {
-    need: "My printer is down",
-    detail: "Tell us the model, the problem and your ZIP code.",
-    cta: "Request printer repair",
-    href: "/request/repair",
+    need: "I need labels or ribbons",
+    detail: "Tell us the printer, the label size and what it's for.",
+    cta: "Get label & ribbon help",
+    href: "/request/labels",
   },
   {
     need: "We need a dependable supplier",
@@ -26,22 +34,24 @@ const paths = [
 ];
 
 const proof = [
+  ...(replyPromise ? [replyPromise.replace(/\.$/, "")] : []),
   `Family-owned in ${site.base.city}, ${site.base.regionName}`,
   `Supplying and servicing office printers for ${site.yearsInBusiness}`,
   "OEM, remanufactured and generic options, quoted side by side",
   "The same people handle your supplies and your repairs",
-  ...(facts.supplyWarranty ? [facts.supplyWarranty] : []),
+  ...(facts.supplyWarranty ? [facts.supplyWarranty.replace(/\.$/, "")] : []),
 ];
 
 const steps = [
   { title: "Send your model or need", body: "A part number or a clear photo is a great start." },
-  { title: "Get clear options", body: "We confirm what fits, what it costs and when it can arrive." },
+  { title: "Get a quote by email", body: "We confirm what fits, what it costs and when it can arrive." },
   { title: "You decide", body: "Nothing is ordered or scheduled until you approve it." },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const google = await getGoogleReviews();
   const otherServices = services.filter((service) =>
-    ["labels-ribbons", "recycling", "equipment", "business-accounts"].includes(service.slug),
+    ["recycling", "equipment", "business-accounts"].includes(service.slug),
   );
 
   return (
@@ -51,19 +61,19 @@ export default function Home() {
         <div className={`${container} grid gap-10 py-12 lg:grid-cols-[1.2fr_1fr] lg:items-center lg:py-20`}>
           <div>
             <Eyebrow>
-              Business printing supplies &amp; repair · {site.base.city}, {site.base.region}
+              Your local printing partner · {site.base.city}, {site.base.region}
             </Eyebrow>
             <h1 className="mt-4 text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
-              Ink, toner and printer repair for your business.
+              Printer repair, toner and labels for your business.
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted">
-              Tell us your printer model and what you need. We find the right supplies, quote your options and help
-              keep your equipment running.
+              Tell us your printer model and what you need. We fix what&apos;s broken, find the right supplies and
+              quote your options fast.
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-              <ButtonLink href="/request/supplies">Get a Supply Quote</ButtonLink>
-              <ButtonLink href="/request/repair" variant="secondary">
-                Request Printer Repair
+              <ButtonLink href="/request/repair">Request Printer Repair</ButtonLink>
+              <ButtonLink href="/request/supplies" variant="secondary">
+                Get a Supply Quote
               </ButtonLink>
             </div>
             <p className="mt-5 text-sm text-muted">
@@ -92,7 +102,7 @@ export default function Home() {
         <h2 id="paths-heading" className="text-2xl font-bold sm:text-3xl">
           What do you need today?
         </h2>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {paths.map((path) => (
             <Link
               key={path.href}
@@ -119,32 +129,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Reviews: rendered only once real, permitted reviews are added in lib/site.ts */}
-      {facts.reviews.length > 0 ? (
-        <section aria-labelledby="reviews-heading" className={`${container} py-14`}>
-          <h2 id="reviews-heading" className="text-2xl font-bold sm:text-3xl">
-            What customers say
-          </h2>
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {facts.reviews.map((review) => (
-              <figure key={review.quote} className="rounded-2xl border border-line p-6">
-                <blockquote className="leading-relaxed">“{review.quote}”</blockquote>
-                <figcaption className="mt-4 text-sm font-semibold">
-                  {review.name}
-                  {review.company ? <span className="font-normal text-muted">, {review.company}</span> : null}
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </section>
-      ) : null}
+      <Reviews google={google} curated={facts.reviews} />
 
       {/* Other services */}
       <section aria-labelledby="services-heading" className={`${container} py-14`}>
         <h2 id="services-heading" className="text-2xl font-bold sm:text-3xl">
           More than toner
         </h2>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
           {otherServices.map((service) => (
             <Link
               key={service.slug}
@@ -176,7 +168,7 @@ export default function Home() {
               </li>
             ))}
           </ol>
-          {facts.replyTime ? <p className="mt-8 font-semibold">We reply {facts.replyTime}.</p> : null}
+          {replyPromise ? <p className="mt-8 font-semibold">{replyPromise}</p> : null}
         </div>
       </section>
 

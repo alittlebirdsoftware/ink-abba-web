@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import type { Faq } from "@/content/services";
 
 export const container = "mx-auto w-full max-w-6xl px-4 sm:px-6";
 
@@ -41,43 +40,4 @@ export function PageHeader({ eyebrow, title, intro }: { eyebrow: string; title: 
       {intro ? <p className="mt-5 text-lg leading-relaxed text-muted">{intro}</p> : null}
     </header>
   );
-}
-
-export function FaqList({ faqs }: { faqs: Faq[] }) {
-  if (faqs.length === 0) return null;
-  return (
-    <section aria-labelledby="faq-heading" className="mt-14 max-w-3xl">
-      <h2 id="faq-heading" className="text-2xl font-bold">
-        Common questions
-      </h2>
-      <div className="mt-4 divide-y divide-line border-y border-line">
-        {faqs.map((faq) => (
-          <details key={faq.q} className="group py-4">
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold">
-              {faq.q}
-              <span aria-hidden className="text-brand transition-transform group-open:rotate-45">
-                +
-              </span>
-            </summary>
-            <p className="mt-3 leading-relaxed text-muted">{faq.a}</p>
-          </details>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-/** FAQPage structured data, so answers can appear in search results. */
-export function FaqJsonLd({ faqs }: { faqs: Faq[] }) {
-  if (faqs.length === 0) return null;
-  const data = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqs.map((faq) => ({
-      "@type": "Question",
-      name: faq.q,
-      acceptedAnswer: { "@type": "Answer", text: faq.a },
-    })),
-  };
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
 }

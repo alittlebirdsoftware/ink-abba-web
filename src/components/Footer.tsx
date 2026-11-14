@@ -28,7 +28,7 @@ const columns = [
 
 export function Footer() {
   return (
-    <footer className="mt-20 border-t border-line bg-mist pb-24 pt-12 lg:pb-12">
+    <footer className="mt-20 border-t border-line bg-mist pb-24 pt-12 lg:pb-12 print:hidden">
       <div className={`${container} grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]`}>
         <div>
           <p className="text-xl font-extrabold tracking-tight">

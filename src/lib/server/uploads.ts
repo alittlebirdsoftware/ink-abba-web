@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { UPLOAD_MAX_BYTES } from "@/lib/validate";
 import { clientOptions, config } from "./config";
 
@@ -44,4 +45,10 @@ export async function readUpload(key: string) {
     contentType: object.ContentType ?? "application/octet-stream",
     filename: key.split("/").pop() ?? "attachment",
   };
+}
+
+/** A link the signed-in owner can use to open a customer's file. It stops working after five minutes. */
+export async function uploadViewUrl(key: string): Promise<string | null> {
+  if (!config.uploadsBucket || !UPLOAD_KEY.test(key)) return null;
+  return getSignedUrl(s3(), new GetObjectCommand({ Bucket: config.uploadsBucket, Key: key }), { expiresIn: 300 });
 }

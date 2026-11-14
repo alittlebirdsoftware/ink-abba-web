@@ -1,9 +1,9 @@
-import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { REQUEST_TYPES, requests } from "@/content/requests";
-import { saveLead, markNotified, type Lead } from "@/lib/server/leads";
-import { acknowledgeCustomer, notifyOwner } from "@/lib/server/notify";
+import { linkBase } from "@/lib/server/auth";
+import { newLeadId, saveLead, updateLead, type Lead } from "@/lib/server/leads";
+import { acknowledgeCustomer, notifyOwner, textOwner } from "@/lib/server/notify";
 import { UPLOAD_KEY } from "@/lib/server/uploads";
 import { validateContact, validateDetails } from "@/lib/validate";
 
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
   }
 
   const lead: Lead = {
-    id: randomUUID(),
+    id: newLeadId(),
     createdAt: new Date().toISOString(),
     type: body.type,
     status: "new",
@@ -75,10 +75,15 @@ export async function POST(request: Request) {
 
   // Notify second. A failure here is logged for the alarm; the lead is already safe.
   try {
-    await notifyOwner(lead);
-    await markNotified(lead);
+    await notifyOwner(lead, linkBase(request));
+    await updateLead(lead.id, { notified: true });
   } catch (error) {
     console.error("LEAD_NOTIFY_FAILED", lead.id, error);
+  }
+  try {
+    await textOwner(lead);
+  } catch (error) {
+    console.error("LEAD_TEXT_FAILED", lead.id, error);
   }
   try {
     await acknowledgeCustomer(lead);

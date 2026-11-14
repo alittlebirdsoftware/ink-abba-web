@@ -5,7 +5,7 @@ import { PhoneLink } from "@/components/PhoneLink";
 import { RequestForm } from "@/components/RequestForm";
 import { PageHeader, container } from "@/components/ui";
 import { REQUEST_TYPES, isRequestType, requests } from "@/content/requests";
-import { facts, site } from "@/lib/site";
+import { replyPromise, site } from "@/lib/site";
 
 type Props = { params: Promise<{ type: string }> };
 
@@ -34,11 +34,11 @@ export default async function RequestPage({ params }: Props) {
     <div className={`${container} py-10 lg:py-14`}>
       <PageHeader eyebrow="Request" title={def.title} intro={def.lead} />
       <div className="mt-8 grid gap-8 lg:grid-cols-[1.6fr_1fr]">
-        <RequestForm def={def} replyTime={facts.replyTime} />
+        <RequestForm def={def} />
         <aside className="h-fit space-y-4 rounded-2xl bg-mist p-6">
           <h2 className="text-lg font-bold">What happens next</h2>
           <p className="leading-relaxed text-muted">{def.note}</p>
-          {facts.replyTime ? <p className="font-semibold">We reply {facts.replyTime}.</p> : null}
+          {replyPromise ? <p className="font-semibold">{replyPromise}</p> : null}
           <p>
             Prefer to talk?
             <br />

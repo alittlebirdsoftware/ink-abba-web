@@ -46,12 +46,13 @@ export default function ContactPage() {
             ) : null}
             {facts.walkIn ? null : (
               <p className="mt-1 text-sm text-muted">
-                We don&apos;t have a walk-in counter. Supplies ship to you, and repairs are arranged by request.
+                We come to you: supplies are delivered and repairs are arranged by request, so there&apos;s no
+                walk-in counter.
               </p>
             )}
           </div>
         </aside>
-        <RequestForm def={requests.question} replyTime={facts.replyTime} />
+        <RequestForm def={requests.question} />
       </div>
     </div>
   );
