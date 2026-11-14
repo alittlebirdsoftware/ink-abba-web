@@ -7,6 +7,8 @@
  * - GOOGLE_SHEET_ID + GOOGLE_OAUTH_* or INKABBA_SHEET_CONFIG set: the InkAbba Google Sheet (sheetStore.ts).
  * - Neither, in development: a JSON file in .data/, so the app runs with no accounts at all.
  */
+import "server-only";
+
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";

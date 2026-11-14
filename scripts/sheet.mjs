@@ -3,7 +3,8 @@
 // quotes in the InkAbba sheet; the CLI below is for reading and fixing the sheet by hand.
 // Changes from the source: INKABBA_* env vars and ~/.config/inkabba/sheet.json; Leads/ID CLI
 // defaults; a refresh token can be passed in the config (cfg.refreshToken, for servers with no
-// token file); the access token is renewed before it expires and once on a 401, because the app
+// token file), or fetched when needed (cfg.credentials, an async function, so a server can read
+// it from a secret store); the access token is renewed before it expires and once on a 401, because the app
 // is long-running; values() can return unformatted numbers; append reads back unformatted and
 // compares numbers numerically.
 //
@@ -179,15 +180,19 @@ async function accessToken(cfg) {
     const { jwt, aud } = buildJwt(cfg.key);
     return tokenPost(aud, { grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: jwt });
   }
-  let refreshToken = cfg.refreshToken;
+  // A server can pass `credentials`, an async function returning { refreshToken, client },
+  // so the secret is fetched when needed instead of sitting in the config.
+  const loaded = cfg.credentials ? await cfg.credentials() : null;
+  const client = loaded?.client ?? cfg.client;
+  let refreshToken = loaded?.refreshToken ?? cfg.refreshToken;
   if (!refreshToken) {
     if (!existsSync(cfg.tokenFile)) throw new Error(`not authorised yet — run: node scripts/sheet.mjs auth`);
     refreshToken = JSON.parse(readFileSync(cfg.tokenFile, 'utf8')).refresh_token;
   }
   try {
-    return await tokenPost(cfg.client.token_uri || 'https://oauth2.googleapis.com/token', {
+    return await tokenPost(client.token_uri || 'https://oauth2.googleapis.com/token', {
       grant_type: 'refresh_token', refresh_token: refreshToken,
-      client_id: cfg.client.client_id, client_secret: cfg.client.client_secret,
+      client_id: client.client_id, client_secret: client.client_secret,
     });
   } catch (e) {
     throw new Error(`${e.message}\nthe stored consent may have been revoked — re-run: node scripts/sheet.mjs auth`);

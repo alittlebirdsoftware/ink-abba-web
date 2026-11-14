@@ -10,8 +10,10 @@ frontend:
       commands:
         # Amplify console variables are build-time only. Server code reads them
         # at runtime from .env.production, so copy the ones the app uses.
-        # None of these are secrets; AWS access comes from the compute role.
-        - env | grep -e LEADS_TABLE -e UPLOADS_BUCKET -e SES_FROM -e LEADS_NOTIFY_TO -e LEADS_NOTIFY_SMS -e OWNER_EMAILS -e SEND_ACK -e GOOGLE_PLACE -e GOOGLE_SHEET_ID -e GOOGLE_OAUTH_ -e SITE_URL -e APP_AWS_REGION >> .env.production || true
+        # None of these should be secrets; AWS access comes from the compute role, and the Google
+        # token is read from Secrets Manager (GOOGLE_SHEETS_SECRET_ID names it).
+        # TEMPORARY: GOOGLE_OAUTH_ carries the token until that secret is live; remove it then.
+        - env | grep -e LEADS_TABLE -e UPLOADS_BUCKET -e SES_FROM -e LEADS_NOTIFY_TO -e LEADS_NOTIFY_SMS -e OWNER_EMAILS -e SEND_ACK -e GOOGLE_PLACE -e GOOGLE_SHEET_ID -e GOOGLE_SHEETS_SECRET_ID -e GOOGLE_OAUTH_ -e SITE_URL -e APP_AWS_REGION >> .env.production || true
         - env | grep -e NEXT_PUBLIC_ >> .env.production || true
         - npm run build
   artifacts:

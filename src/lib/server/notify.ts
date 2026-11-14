@@ -1,3 +1,4 @@
+import "server-only";
 import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2";
 import { PublishCommand, SNSClient } from "@aws-sdk/client-sns";
 import { requests } from "@/content/requests";

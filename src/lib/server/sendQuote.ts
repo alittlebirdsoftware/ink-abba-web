@@ -1,3 +1,4 @@
+import "server-only";
 import { quotePath, type Quote } from "@/lib/quote";
 import { getLead, updateLead } from "./leads";
 import { sendQuoteEmail } from "./notify";

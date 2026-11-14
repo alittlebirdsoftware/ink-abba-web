@@ -3,6 +3,8 @@
  * See .env.example for what each one does. Nothing here is a secret: on AWS
  * the app gets its credentials from the Amplify compute role.
  */
+import "server-only";
+
 export const config = {
   /** DynamoDB table for leads and quotes. Unset: the Google Sheet if configured, else .data/db.json (see store.ts). */
   leadsTable: process.env.LEADS_TABLE || null,

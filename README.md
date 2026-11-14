@@ -153,17 +153,28 @@ To read or fix the sheet by hand:
 INKABBA_SHEET_CONFIG=~/.config/inkabba/sheet.json node scripts/sheet.mjs pull --tab Leads
 ```
 
-Production needs the four `GOOGLE_*` values from `.env.example`. The refresh
-token is from a Google sign-in and can open every sheet that account can
-open, and `amplify.yml` copies it into the build's `.env.production`. Grant
-it from a Google account that only has access to the InkAbba sheet rather
-than a personal one.
+In production the app reads the Google OAuth client and refresh token from
+the AWS Secrets Manager secret `inkabba/google-sheets-oauth`, through the
+Amplify compute role, so they are never in an environment variable or the
+build output. Amplify only needs `GOOGLE_SHEET_ID` and
+`GOOGLE_SHEETS_SECRET_ID=inkabba/google-sheets-oauth`. The secret is a JSON
+string with `client_id`, `client_secret` and `refresh_token`; create it once
+in the hosting region, and the app picks up a new value within five minutes.
+The refresh token is from a Google sign-in and can open every sheet that
+account can open, so grant it from a Google account that only has access to
+the InkAbba sheet rather than a personal one.
+
+Server code lives in `src/lib/server/`, and every file there starts with
+`import "server-only"`: importing one into a browser component fails the
+build instead of shipping it.
 
 ## Deploying to AWS
 
 1. **Backend.** Deploy `infra/template.yaml` as a CloudFormation stack in the
    region you will host in. Note the outputs. Leave `LEADS_TABLE` unset while
-   leads and quotes are kept in the Google Sheet.
+   leads and quotes are kept in the Google Sheet. In the same region, create
+   the secret `inkabba/google-sheets-oauth` (see "Where leads and quotes are
+   stored"); the stack's compute role may read it and nothing else may.
 2. **Email.** Add the three DKIM CNAME records from the stack outputs at the
    DNS host for inkabba.com. Then request SES production access; until it is
    granted SES only delivers to verified addresses.

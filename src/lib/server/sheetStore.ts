@@ -13,10 +13,13 @@
  * Every value is written RAW, so text a customer types (even one starting
  * with "=") is stored as text and never run as a formula.
  */
+import "server-only";
+
 import { requests, REQUEST_TYPES, type RequestType } from "@/content/requests";
 import { quoteLabel, quotePath, quoteTotals, type Quote, type QuoteItem } from "@/lib/quote";
 import { site } from "@/lib/site";
 import { colLetter, createSheets, headerIndex, loadConfig } from "../../../scripts/sheet.mjs";
+import { googleCredentials } from "./googleCredentials";
 import type { Lead, LeadStatus } from "./leads";
 import type { Item, Store } from "./store";
 
@@ -431,6 +434,13 @@ function formatRequests(sheetId: number, spec: TabSpec) {
 
 export function sheetConfig() {
   const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+  const secretId = process.env.GOOGLE_SHEETS_SECRET_ID;
+  // On AWS: the OAuth client and refresh token come from Secrets Manager (googleCredentials.ts).
+  if (spreadsheetId && secretId) {
+    return { mode: "oauth", spreadsheetId, credentials: () => googleCredentials(secretId) };
+  }
+  // TEMPORARY, until the secret is in place: the same values as environment variables.
+  // Remove this branch, and GOOGLE_OAUTH_* in amplify.yml, once GOOGLE_SHEETS_SECRET_ID is live.
   const refreshToken = process.env.GOOGLE_OAUTH_REFRESH_TOKEN;
   if (spreadsheetId && refreshToken) {
     return {
@@ -445,7 +455,10 @@ export function sheetConfig() {
 }
 
 export const sheetConfigured = () =>
-  Boolean((process.env.GOOGLE_SHEET_ID && process.env.GOOGLE_OAUTH_REFRESH_TOKEN) || process.env.INKABBA_SHEET_CONFIG);
+  Boolean(
+    (process.env.GOOGLE_SHEET_ID && (process.env.GOOGLE_SHEETS_SECRET_ID || process.env.GOOGLE_OAUTH_REFRESH_TOKEN)) ||
+      process.env.INKABBA_SHEET_CONFIG,
+  );
 
 export function sheetStore(): Store {
   const sheets: Sheets = createSheets(sheetConfig() as Parameters<typeof createSheets>[0]);

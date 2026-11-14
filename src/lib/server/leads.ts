@@ -1,3 +1,4 @@
+import "server-only";
 import { randomBytes } from "node:crypto";
 import type { RequestType } from "@/content/requests";
 import type { Contact } from "@/lib/validate";

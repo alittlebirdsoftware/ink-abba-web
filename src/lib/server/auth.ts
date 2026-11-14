@@ -6,6 +6,8 @@
  * "Sign in" creates a 30-day session. Only hashes of the link token and the
  * session id are stored, so a copy of the database cannot be used to sign in.
  */
+import "server-only";
+
 import { createHash, randomBytes } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";

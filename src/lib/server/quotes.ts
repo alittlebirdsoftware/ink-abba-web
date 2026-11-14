@@ -1,3 +1,4 @@
+import "server-only";
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { FIRST_QUOTE_NUMBER, type Quote, type QuoteDraft } from "@/lib/quote";

@@ -9,6 +9,8 @@
  * - Each review must show its author, link to the review on Google Maps, and
  *   carry a "Google Maps" attribution. components/Reviews.tsx does this.
  */
+import "server-only";
+
 
 export type GoogleReview = {
   rating: number;
