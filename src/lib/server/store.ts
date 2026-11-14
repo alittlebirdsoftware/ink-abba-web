@@ -4,7 +4,8 @@
  * Records are keyed by `pk` (the kind of record) and `sk` (its id). Three
  * backends share this interface, chosen in this order:
  * - LEADS_TABLE set: a single DynamoDB table (for when the business outgrows the sheet).
- * - GOOGLE_SHEET_ID + GOOGLE_OAUTH_* or INKABBA_SHEET_CONFIG set: the InkAbba Google Sheet (sheetStore.ts).
+ * - GOOGLE_SHEET_ID + GOOGLE_SHEETS_SECRET_ID (AWS) or INKABBA_SHEET_CONFIG (local) set: the InkAbba
+ *   Google Sheet (sheetStore.ts).
  * - Neither, in development: a JSON file in .data/, so the app runs with no accounts at all.
  */
 import "server-only";

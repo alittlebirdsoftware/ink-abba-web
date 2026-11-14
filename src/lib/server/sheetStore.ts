@@ -439,26 +439,12 @@ export function sheetConfig() {
   if (spreadsheetId && secretId) {
     return { mode: "oauth", spreadsheetId, credentials: () => googleCredentials(secretId) };
   }
-  // TEMPORARY, until the secret is in place: the same values as environment variables.
-  // Remove this branch, and GOOGLE_OAUTH_* in amplify.yml, once GOOGLE_SHEETS_SECRET_ID is live.
-  const refreshToken = process.env.GOOGLE_OAUTH_REFRESH_TOKEN;
-  if (spreadsheetId && refreshToken) {
-    return {
-      mode: "oauth",
-      spreadsheetId,
-      refreshToken,
-      client: { client_id: process.env.GOOGLE_OAUTH_CLIENT_ID, client_secret: process.env.GOOGLE_OAUTH_CLIENT_SECRET },
-    };
-  }
   // Local: ~/.config/inkabba/sheet.json, which points at the machine's shared OAuth files.
   return loadConfig(process.env);
 }
 
 export const sheetConfigured = () =>
-  Boolean(
-    (process.env.GOOGLE_SHEET_ID && (process.env.GOOGLE_SHEETS_SECRET_ID || process.env.GOOGLE_OAUTH_REFRESH_TOKEN)) ||
-      process.env.INKABBA_SHEET_CONFIG,
-  );
+  Boolean((process.env.GOOGLE_SHEET_ID && process.env.GOOGLE_SHEETS_SECRET_ID) || process.env.INKABBA_SHEET_CONFIG);
 
 export function sheetStore(): Store {
   const sheets: Sheets = createSheets(sheetConfig() as Parameters<typeof createSheets>[0]);

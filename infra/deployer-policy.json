@@ -1,0 +1,66 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "Stack",
+      "Effect": "Allow",
+      "Action": ["cloudformation:*"],
+      "Resource": "arn:aws:cloudformation:us-west-2:739331267150:stack/inkabba-site/*"
+    },
+    {
+      "Sid": "StackTemplates",
+      "Effect": "Allow",
+      "Action": ["cloudformation:ValidateTemplate", "cloudformation:GetTemplateSummary"],
+      "Resource": "*"
+    },
+    {
+      "Sid": "SesIdentities",
+      "Effect": "Allow",
+      "Action": ["ses:CreateEmailIdentity", "ses:GetEmailIdentity", "ses:DeleteEmailIdentity", "ses:TagResource", "ses:UntagResource"],
+      "Resource": "arn:aws:ses:us-west-2:739331267150:identity/*"
+    },
+    {
+      "Sid": "SesStatus",
+      "Effect": "Allow",
+      "Action": ["ses:GetAccount", "ses:ListEmailIdentities"],
+      "Resource": "*"
+    },
+    {
+      "Sid": "ComputeRole",
+      "Effect": "Allow",
+      "Action": ["iam:CreateRole", "iam:DeleteRole", "iam:GetRole", "iam:TagRole", "iam:UntagRole", "iam:UpdateAssumeRolePolicy", "iam:PutRolePolicy", "iam:GetRolePolicy", "iam:DeleteRolePolicy"],
+      "Resource": "arn:aws:iam::739331267150:role/inkabba-site-*"
+    },
+    {
+      "Sid": "PassComputeRoleToAmplify",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": "arn:aws:iam::739331267150:role/inkabba-site-*",
+      "Condition": { "StringEquals": { "iam:PassedToService": "amplify.amazonaws.com" } }
+    },
+    {
+      "Sid": "UploadsBucket",
+      "Effect": "Allow",
+      "Action": ["s3:CreateBucket", "s3:DeleteBucket", "s3:ListBucket", "s3:Get*", "s3:Put*", "s3:DeleteBucketPolicy"],
+      "Resource": ["arn:aws:s3:::inkabba-site-*", "arn:aws:s3:::inkabba-site-*/*"]
+    },
+    {
+      "Sid": "LeadsTable",
+      "Effect": "Allow",
+      "Action": ["dynamodb:CreateTable", "dynamodb:DeleteTable", "dynamodb:UpdateTable", "dynamodb:DescribeTable", "dynamodb:UpdateTimeToLive", "dynamodb:DescribeTimeToLive", "dynamodb:UpdateContinuousBackups", "dynamodb:DescribeContinuousBackups", "dynamodb:TagResource", "dynamodb:UntagResource", "dynamodb:ListTagsOfResource"],
+      "Resource": "arn:aws:dynamodb:us-west-2:739331267150:table/inkabba-site-*"
+    },
+    {
+      "Sid": "ErrorAlarm",
+      "Effect": "Allow",
+      "Action": ["sns:CreateTopic", "sns:DeleteTopic", "sns:GetTopicAttributes", "sns:SetTopicAttributes", "sns:Subscribe", "sns:Unsubscribe", "sns:ListSubscriptionsByTopic", "sns:TagResource", "cloudwatch:PutMetricAlarm", "cloudwatch:DeleteAlarms", "cloudwatch:DescribeAlarms", "cloudwatch:TagResource"],
+      "Resource": ["arn:aws:sns:us-west-2:739331267150:inkabba-site-*", "arn:aws:cloudwatch:us-west-2:739331267150:alarm:inkabba-site-*"]
+    },
+    {
+      "Sid": "SheetsSecret",
+      "Effect": "Allow",
+      "Action": ["secretsmanager:CreateSecret", "secretsmanager:PutSecretValue", "secretsmanager:DescribeSecret", "secretsmanager:TagResource"],
+      "Resource": "arn:aws:secretsmanager:us-west-2:739331267150:secret:inkabba/*"
+    }
+  ]
+}
