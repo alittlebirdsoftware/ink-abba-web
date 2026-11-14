@@ -1,0 +1,182 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  InkAbba website backend: lead storage, photo uploads, email sending identity,
+  the role the Amplify-hosted Next.js app runs as, and an error alarm.
+  The Amplify app itself is created in the console (it needs a Git connection).
+
+Parameters:
+  SiteOrigin:
+    Type: String
+    Default: https://inkabba.com
+    Description: Origin allowed to upload photos to the bucket. No trailing slash.
+  PreviewOrigin:
+    Type: String
+    Default: ""
+    Description: Optional second origin, e.g. the Amplify preview URL (https://main.xxxx.amplifyapp.com).
+  EmailDomain:
+    Type: String
+    Default: inkabba.com
+    Description: Domain to verify in SES for sending lead emails.
+  AlarmEmail:
+    Type: String
+    Default: ""
+    Description: Optional. Receives an email when the site returns server errors.
+  AmplifyAppId:
+    Type: String
+    Default: ""
+    Description: Optional. The Amplify app ID (dxxxxxxxx). Set it on a second deploy to enable the alarm.
+
+Conditions:
+  HasPreviewOrigin: !Not [!Equals [!Ref PreviewOrigin, ""]]
+  HasAlarm: !And
+    - !Not [!Equals [!Ref AlarmEmail, ""]]
+    - !Not [!Equals [!Ref AmplifyAppId, ""]]
+
+Resources:
+  LeadsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - { AttributeName: pk, AttributeType: S }
+        - { AttributeName: sk, AttributeType: S }
+      KeySchema:
+        - { AttributeName: pk, KeyType: HASH }
+        - { AttributeName: sk, KeyType: RANGE }
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+
+  UploadsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault: { SSEAlgorithm: AES256 }
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      CorsConfiguration:
+        CorsRules:
+          - AllowedMethods: [POST]
+            AllowedHeaders: ["*"]
+            AllowedOrigins:
+              - !Ref SiteOrigin
+              - !If [HasPreviewOrigin, !Ref PreviewOrigin, !Ref "AWS::NoValue"]
+            MaxAge: 3000
+      LifecycleConfiguration:
+        Rules:
+          # The owner receives each photo by email; the stored copy is temporary.
+          - Id: ExpireUploads
+            Status: Enabled
+            Prefix: uploads/
+            ExpirationInDays: 90
+          - Id: AbortIncompleteUploads
+            Status: Enabled
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 1
+
+  UploadsBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref UploadsBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: RequireTls
+            Effect: Deny
+            Principal: "*"
+            Action: "s3:*"
+            Resource:
+              - !GetAtt UploadsBucket.Arn
+              - !Sub "${UploadsBucket.Arn}/*"
+            Condition:
+              Bool: { "aws:SecureTransport": "false" }
+
+  EmailIdentity:
+    Type: AWS::SES::EmailIdentity
+    Properties:
+      EmailIdentity: !Ref EmailDomain
+
+  # Attach this in Amplify: App settings > IAM roles > Compute role.
+  ComputeRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: { Service: amplify.amazonaws.com }
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: inkabba-site
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: StoreLeads
+                Effect: Allow
+                Action: [dynamodb:PutItem, dynamodb:UpdateItem]
+                Resource: !GetAtt LeadsTable.Arn
+              - Sid: Uploads
+                Effect: Allow
+                Action: [s3:PutObject, s3:GetObject]
+                Resource: !Sub "${UploadsBucket.Arn}/uploads/*"
+              - Sid: SendEmail
+                Effect: Allow
+                Action: ses:SendEmail
+                Resource: !Sub "arn:${AWS::Partition}:ses:${AWS::Region}:${AWS::AccountId}:identity/*"
+
+  AlarmTopic:
+    Type: AWS::SNS::Topic
+    Condition: HasAlarm
+    Properties:
+      Subscription:
+        - Protocol: email
+          Endpoint: !Ref AlarmEmail
+
+  ServerErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: HasAlarm
+    Properties:
+      AlarmDescription: The InkAbba site returned server errors. A visitor may have been unable to send a request.
+      Namespace: AWS/AmplifyHosting
+      MetricName: 5xxErrors
+      Dimensions:
+        - { Name: App, Value: !Ref AmplifyAppId }
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref AlarmTopic]
+
+Outputs:
+  LeadsTableName:
+    Description: Set as LEADS_TABLE in Amplify.
+    Value: !Ref LeadsTable
+  UploadsBucketName:
+    Description: Set as UPLOADS_BUCKET in Amplify.
+    Value: !Ref UploadsBucket
+  ComputeRoleArn:
+    Description: Attach as the Amplify compute role.
+    Value: !GetAtt ComputeRole.Arn
+  DkimRecord1:
+    Description: CNAME to add at the DNS host (name -> value).
+    Value: !Sub "${EmailIdentity.DkimDNSTokenName1} -> ${EmailIdentity.DkimDNSTokenValue1}"
+  DkimRecord2:
+    Description: CNAME to add at the DNS host (name -> value).
+    Value: !Sub "${EmailIdentity.DkimDNSTokenName2} -> ${EmailIdentity.DkimDNSTokenValue2}"
+  DkimRecord3:
+    Description: CNAME to add at the DNS host (name -> value).
+    Value: !Sub "${EmailIdentity.DkimDNSTokenName3} -> ${EmailIdentity.DkimDNSTokenValue3}"

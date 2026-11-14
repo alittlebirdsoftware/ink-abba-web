@@ -1,0 +1,24 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - nvm install 22
+        - nvm use 22
+        - npm ci
+    build:
+      commands:
+        # Amplify console variables are build-time only. Server code reads them
+        # at runtime from .env.production, so copy the ones the app uses.
+        # None of these are secrets; AWS access comes from the compute role.
+        - env | grep -e LEADS_TABLE -e UPLOADS_BUCKET -e SES_FROM -e LEADS_NOTIFY_TO -e SEND_ACK -e SITE_URL -e APP_AWS_REGION >> .env.production || true
+        - env | grep -e NEXT_PUBLIC_ >> .env.production || true
+        - npm run build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - "**/*"
+  cache:
+    paths:
+      - node_modules/**/*
+      - .next/cache/**/*
