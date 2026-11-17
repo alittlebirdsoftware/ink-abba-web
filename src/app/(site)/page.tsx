@@ -193,7 +193,12 @@ export default async function Home() {
         </div>
       </section>
 
-      <Reviews google={google} curated={facts.reviews} />
+      <Reviews
+        google={google}
+        curated={facts.reviews}
+        profileUrl={facts.googleProfileUrl}
+        writeReviewUrl={facts.googleWriteReviewUrl}
+      />
 
       {/* How it works */}
       <section aria-labelledby="how-heading" className="bg-mist">

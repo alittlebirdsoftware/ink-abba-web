@@ -29,7 +29,7 @@ export const site = {
   equipmentBrands: ["Lexmark", "HP", "Xerox", "Konica Minolta", "Canon", "Dell", "Zebra"],
 } as const;
 
-export type Review = { quote: string; name: string; company?: string };
+export type Review = { quote: string; name: string; company?: string; /** Stars out of 5, when the review has a rating. */ rating?: number };
 
 export const facts: {
   /** How fast requests are answered while open. Shown on every form and confirmation. */
@@ -57,6 +57,10 @@ export const facts: {
    * add to them. Only include reviews the customer has agreed to publish.
    */
   reviews: Review[];
+  /** The business's Google Maps listing, linked as "See all reviews on Google". */
+  googleProfileUrl: string | null;
+  /** The owner's "Ask for reviews" link from Google Business Profile (g.page/r/…/review). */
+  googleWriteReviewUrl: string | null;
 } = {
   replyTime: "within 2 minutes",
   serviceAreas: [],
@@ -68,7 +72,42 @@ export const facts: {
   returnsPolicy: null,
   certifications: [],
   walkIn: false,
-  reviews: [],
+  // Google reviews from the last two years, approved by their authors for the site (added 2026-11-17).
+  // Newest first. Older reviews and the owner's replies are left out on purpose.
+  reviews: [
+    {
+      rating: 5,
+      name: "Lorenzo Kunst",
+      quote: "As an IT professional the prices and attention to service cannot be beat! Always a quick response time.",
+    },
+    {
+      rating: 5,
+      name: "Scarlet Tobing",
+      quote:
+        "Our laser printer was not working after 6.5 years and I found Ink Abba on Google. I reached out because I want to try to repair it instead of buying a new one. Brian has been helpful from the start, willing to spend his time trying to fix our printer. He was very professional, friendly and trustworthy. I would gladly recommend him to anyone!",
+    },
+    {
+      rating: 5,
+      name: "Cristian Vargas",
+      quote:
+        "Ink Abba has been our trusted ink supplier and printer repair service provider for several years. Their reliability and efficiency have been invaluable in ensuring we have everything we need in a timely and effective manner. I can’t overstate how much of an asset they’ve been to our operations.",
+    },
+    {
+      rating: 5,
+      name: "Michael Mineo",
+      quote:
+        "Ink Abba is my go to for toner! Competitive pricing with the best customer service. No one comes close, Ink Abba is the best in town. Highly recommended.",
+    },
+    {
+      rating: 5,
+      name: "Gabby Mariage",
+      quote:
+        "Brian was super helpful and knowledgeable about helping me find exactly what I needed. Great customer service! I’ll definitely be going back.",
+    },
+  ],
+  // The "Ink Abba" listing at 13089 Peyton Dr, Chino Hills (found 2026-11-17).
+  googleProfileUrl: "https://maps.google.com/?cid=248101152750692672",
+  googleWriteReviewUrl: null,
 };
 
 export const nav = [

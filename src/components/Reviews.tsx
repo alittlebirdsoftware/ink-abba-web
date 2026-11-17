@@ -17,9 +17,21 @@ function Stars({ rating }: { rating: number }) {
  * and the "Google Maps" attribution, as Google's terms require.
  * Renders nothing when there are no reviews of either kind.
  */
-export function Reviews({ google, curated }: { google: GoogleReviews | null; curated: Review[] }) {
+export function Reviews({
+  google,
+  curated,
+  profileUrl,
+  writeReviewUrl,
+}: {
+  google: GoogleReviews | null;
+  curated: Review[];
+  /** Fallback "see all" link when Google isn't connected. */
+  profileUrl?: string | null;
+  writeReviewUrl?: string | null;
+}) {
   const googleReviews = google?.reviews ?? [];
   if (googleReviews.length === 0 && curated.length === 0) return null;
+  const allReviewsUrl = google?.url ?? profileUrl ?? null;
 
   return (
     <section aria-labelledby="reviews-heading" className={`${container} py-14`}>
@@ -37,11 +49,18 @@ export function Reviews({ google, curated }: { google: GoogleReviews | null; cur
             </p>
           ) : null}
         </div>
-        {google?.url ? (
-          <a href={google.url} target="_blank" rel="noopener" className="font-semibold text-brand hover:underline">
-            Read all reviews →
-          </a>
-        ) : null}
+        <div className="flex flex-wrap gap-x-6 gap-y-2">
+          {writeReviewUrl ? (
+            <a href={writeReviewUrl} target="_blank" rel="noopener" className="font-semibold text-brand hover:underline">
+              Leave us a review
+            </a>
+          ) : null}
+          {allReviewsUrl ? (
+            <a href={allReviewsUrl} target="_blank" rel="noopener" className="font-semibold text-brand hover:underline">
+              See all reviews on Google →
+            </a>
+          ) : null}
+        </div>
       </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -88,7 +107,8 @@ export function Reviews({ google, curated }: { google: GoogleReviews | null; cur
         ))}
         {curated.map((review) => (
           <figure key={review.quote} className="flex flex-col rounded-2xl border border-line p-6">
-            <blockquote className="flex-1 leading-relaxed">“{review.quote}”</blockquote>
+            {review.rating ? <Stars rating={review.rating} /> : null}
+            <blockquote className={`flex-1 leading-relaxed ${review.rating ? "mt-3" : ""}`}>“{review.quote}”</blockquote>
             <figcaption className="mt-4 text-sm font-semibold">
               {review.name}
               {review.company ? <span className="font-normal text-muted">, {review.company}</span> : null}
