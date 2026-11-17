@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { PhoneLink } from "@/components/PhoneLink";
 import { Reviews } from "@/components/Reviews";
@@ -42,6 +43,31 @@ const proof = [
   ...(facts.supplyWarranty ? [facts.supplyWarranty.replace(/\.$/, "")] : []),
 ];
 
+/** The four photo cards. Each slug is a service page and names its photo in public/images/services/. */
+const featured = [
+  { slug: "ink-toner", title: "Ink & Toner", alt: "Cyan, magenta, yellow and black toner cartridges on a desk" },
+  { slug: "printer-repair", title: "Printer & Copier Repair", alt: "Office printer open for service, with a screwdriver" },
+  { slug: "labels-ribbons", title: "Thermal Labels & Ribbons", alt: "A roll of white thermal labels beside a black ribbon" },
+  { slug: "recycling", title: "Recycling & Buyback", alt: "Used toner cartridges in a recycling bin beside a shipping box" },
+] as const;
+
+function ServiceIcon({ name }: { name: (typeof featured)[number]["slug"] }) {
+  const paths: Record<typeof name, string> = {
+    "ink-toner": "M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z",
+    "printer-repair":
+      "M14.7 6.3a4 4 0 0 0-5.4 5.4L3.5 17.5a2.1 2.1 0 0 0 3 3l5.8-5.8a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z",
+    "labels-ribbons": "M4 5v14M7 5v14M10.5 5v14M13 5v14M16.5 5v14M20 5v14",
+    recycling: "M3 12a9 9 0 0 1 15.5-6.2L21 8M21 3v5h-5M21 12a9 9 0 0 1-15.5 6.2L3 16M3 21v-5h5",
+  };
+  return (
+    <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-xl bg-mist text-brand">
+      <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <path d={paths[name]} />
+      </svg>
+    </span>
+  );
+}
+
 const steps = [
   { title: "Send your model or need", body: "A part number or a clear photo is a great start." },
   { title: "Get a quote by email", body: "We confirm what fits, what it costs and when it can arrive." },
@@ -50,9 +76,7 @@ const steps = [
 
 export default async function Home() {
   const google = await getGoogleReviews();
-  const otherServices = services.filter((service) =>
-    ["recycling", "equipment", "business-accounts"].includes(service.slug),
-  );
+  const otherServices = services.filter((service) => ["equipment", "business-accounts"].includes(service.slug));
 
   return (
     <>
@@ -117,6 +141,46 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Photo cards for the four main services */}
+      <section aria-labelledby="services-heading" className={`${container} pb-14`}>
+        <h2 id="services-heading" className="text-2xl font-bold sm:text-3xl">
+          More than toner. Support for your entire office.
+        </h2>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {featured.map((card) => (
+            <Link
+              key={card.slug}
+              href={`/${card.slug}`}
+              className="group overflow-hidden rounded-2xl border border-line transition-colors hover:border-brand"
+            >
+              <Image
+                src={`/images/services/${card.slug}.webp`}
+                alt={card.alt}
+                width={1536}
+                height={1024}
+                sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
+                className="aspect-[3/2] w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+              />
+              <div className="flex items-center gap-3 p-5">
+                <ServiceIcon name={card.slug} />
+                <h3 className="text-lg font-bold leading-snug group-hover:underline">{card.title}</h3>
+              </div>
+            </Link>
+          ))}
+        </div>
+        <p className="mt-5 text-sm text-muted">
+          Also:{" "}
+          {otherServices.map((service, index) => (
+            <span key={service.slug}>
+              {index > 0 ? " · " : null}
+              <Link href={`/${service.slug}`} className="font-semibold text-brand hover:underline">
+                {service.eyebrow}
+              </Link>
+            </span>
+          ))}
+        </p>
+      </section>
+
       {/* Brands */}
       <section aria-labelledby="brands-heading" className="border-y border-line">
         <div className={`${container} py-8 text-center`}>
@@ -130,28 +194,6 @@ export default async function Home() {
       </section>
 
       <Reviews google={google} curated={facts.reviews} />
-
-      {/* Other services */}
-      <section aria-labelledby="services-heading" className={`${container} py-14`}>
-        <h2 id="services-heading" className="text-2xl font-bold sm:text-3xl">
-          More than toner
-        </h2>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          {otherServices.map((service) => (
-            <Link
-              key={service.slug}
-              href={`/${service.slug}`}
-              className="group rounded-2xl border border-line p-6 transition-colors hover:border-brand"
-            >
-              <h3 className="text-lg font-bold">{service.eyebrow}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted">{service.summary}</p>
-              <span className="mt-4 inline-block text-sm font-semibold text-brand group-hover:underline">
-                Learn more →
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section>
 
       {/* How it works */}
       <section aria-labelledby="how-heading" className="bg-mist">
