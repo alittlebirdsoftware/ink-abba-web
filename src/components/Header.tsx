@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { nav, site } from "@/lib/site";
+import { Logo } from "./Logo";
 import { PhoneLink } from "./PhoneLink";
 import { container } from "./ui";
 
@@ -17,8 +18,8 @@ export function Header() {
   return (
     <header className="border-b border-line bg-white print:hidden">
       <div className={`${container} flex h-16 items-center justify-between gap-4`}>
-        <Link href="/" className="text-2xl font-extrabold tracking-tight" aria-label={`${site.name} home`}>
-          Ink<span className="text-brand">Abba</span>
+        <Link href="/" className="shrink-0" aria-label={`${site.name} home`}>
+          <Logo height={42} priority />
         </Link>
 
         <nav aria-label="Main" className="hidden items-center gap-6 lg:flex">

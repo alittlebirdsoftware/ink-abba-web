@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { site } from "@/lib/site";
+import { Logo } from "./Logo";
 import { PhoneLink } from "./PhoneLink";
 import { container } from "./ui";
 
@@ -31,8 +32,8 @@ export function Footer() {
     <footer className="mt-20 border-t border-line bg-mist pb-24 pt-12 lg:pb-12 print:hidden">
       <div className={`${container} grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]`}>
         <div>
-          <p className="text-xl font-extrabold tracking-tight">
-            Ink<span className="text-brand">Abba</span>
+          <p>
+            <Logo height={44} />
           </p>
           <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted">
             Family-owned in {site.base.city}, {site.base.regionName}. Business printing supplies and repair for{" "}
