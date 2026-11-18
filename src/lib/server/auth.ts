@@ -95,6 +95,8 @@ export async function getOwner(): Promise<string | null> {
   if (!sessionId || !/^[0-9a-f]{64}$/.test(sessionId)) return null;
   const session = await store().get("SESSION", hash(sessionId));
   if (!session || new Date(String(session.expiresAt)) < new Date()) return null;
+  // Someone taken off OWNER_EMAILS loses access at once, even mid-session.
+  if (!isOwner(String(session.email))) return null;
   return String(session.email);
 }
 
