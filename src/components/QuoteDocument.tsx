@@ -1,4 +1,5 @@
 import { formatDay, formatStamp, money, quoteLabel, quoteTotals, type Quote } from "@/lib/quote";
+import { businessEmail } from "@/lib/server/business";
 import { site } from "@/lib/site";
 
 /** The quote as the customer sees it. Used on their page and in the owner's view of it. */
@@ -12,7 +13,7 @@ export function QuoteDocument({ quote }: { quote: Quote }) {
             Ink<span className="text-brand">Abba</span>
           </p>
           <p className="mt-1 text-sm text-muted">
-            {site.phone.display} · {site.email}
+            {site.phone.display} · {businessEmail}
           </p>
         </div>
         <div className="text-right">

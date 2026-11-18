@@ -14,7 +14,6 @@ export const site = {
   url: process.env.SITE_URL ?? "https://inkabba.com",
   // A local 909 number is planned. Change it here and every page, link and email follows.
   phone: { display: "(888) 556-9444", href: "tel:+18885569444", e164: "+18885569444" },
-  email: "sales@inkabba.com",
   base: { city: "Chino Hills", region: "CA", regionName: "California" },
   // The live site shows Monday as "8:30 am – 3:30 am"; assumed to be a typo for pm.
   hours: {

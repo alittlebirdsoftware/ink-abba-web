@@ -15,7 +15,6 @@ const localBusiness = {
   name: site.name,
   url: site.url,
   telephone: site.phone.e164,
-  email: site.email,
   description: site.description,
   address: {
     "@type": "PostalAddress",

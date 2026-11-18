@@ -42,10 +42,6 @@ export function Footer() {
           <p className="mt-4 text-sm">
             <PhoneLink location="footer" className="font-semibold hover:text-brand" />
             <br />
-            <a href={`mailto:${site.email}`} className="hover:text-brand">
-              {site.email}
-            </a>
-            <br />
             <span className="text-muted">{site.hours.display}</span>
           </p>
         </div>

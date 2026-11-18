@@ -26,12 +26,6 @@ export default function ContactPage() {
             <PhoneLink location="contact" className="text-2xl font-bold text-brand hover:underline" />
           </div>
           <div>
-            <h2 className="text-sm font-bold uppercase tracking-widest text-muted">Email</h2>
-            <a href={`mailto:${site.email}`} className="font-semibold hover:text-brand">
-              {site.email}
-            </a>
-          </div>
-          <div>
             <h2 className="text-sm font-bold uppercase tracking-widest text-muted">Hours</h2>
             <p>{site.hours.display}</p>
             <p className="text-sm text-muted">Closed Saturday and Sunday</p>
