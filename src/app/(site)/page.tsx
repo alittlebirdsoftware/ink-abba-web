@@ -68,12 +68,6 @@ function ServiceIcon({ name }: { name: (typeof featured)[number]["slug"] }) {
   );
 }
 
-const steps = [
-  { title: "Send your model or need", body: "A part number or a clear photo is a great start." },
-  { title: "Get a quote by email", body: "We confirm what fits, what it costs and when it can arrive." },
-  { title: "You decide", body: "Nothing is ordered or scheduled until you approve it." },
-];
-
 export default async function Home() {
   const google = await getGoogleReviews();
   const otherServices = services.filter((service) => ["equipment", "business-accounts"].includes(service.slug));
@@ -84,9 +78,7 @@ export default async function Home() {
       <section className="bg-mist">
         <div className={`${container} grid gap-10 py-12 lg:grid-cols-[1.2fr_1fr] lg:items-center lg:py-20`}>
           <div>
-            <Eyebrow>
-              Your local printing partner · {site.base.city}, {site.base.region}
-            </Eyebrow>
+            <Eyebrow>Your local printing partner</Eyebrow>
             <h1 className="mt-4 text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
               Printer repair, toner and labels for your business.
             </h1>
@@ -199,25 +191,6 @@ export default async function Home() {
         profileUrl={facts.googleProfileUrl}
         writeReviewUrl={facts.googleWriteReviewUrl}
       />
-
-      {/* How it works */}
-      <section aria-labelledby="how-heading" className="bg-mist">
-        <div className={`${container} py-14`}>
-          <h2 id="how-heading" className="text-2xl font-bold sm:text-3xl">
-            How it works
-          </h2>
-          <ol className="mt-6 grid gap-6 md:grid-cols-3">
-            {steps.map((step, index) => (
-              <li key={step.title}>
-                <p className="text-sm font-bold text-brand">Step {index + 1}</p>
-                <h3 className="mt-1 text-xl font-bold">{step.title}</h3>
-                <p className="mt-2 text-muted">{step.body}</p>
-              </li>
-            ))}
-          </ol>
-          {replyPromise ? <p className="mt-8 font-semibold">{replyPromise}</p> : null}
-        </div>
-      </section>
 
       {/* Existing customers and the undecided */}
       <section className={`${container} py-14`}>
