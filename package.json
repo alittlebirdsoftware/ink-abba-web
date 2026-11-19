@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:seo": "node --test scripts/check-seo.test.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.1169.0",

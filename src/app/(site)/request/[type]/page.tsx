@@ -6,6 +6,7 @@ import { RequestForm } from "@/components/RequestForm";
 import { PageHeader, container } from "@/components/ui";
 import { REQUEST_TYPES, isRequestType, requests } from "@/content/requests";
 import { replyPromise, site } from "@/lib/site";
+import { breadcrumbs, toJsonLd } from "@/lib/structuredData";
 
 type Props = { params: Promise<{ type: string }> };
 
@@ -32,6 +33,18 @@ export default async function RequestPage({ params }: Props) {
 
   return (
     <div className={`${container} py-10 lg:py-14`}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: toJsonLd(
+            breadcrumbs([
+              { name: "Home", path: "/" },
+              { name: "Find help", path: "/find-help" },
+              { name: def.title, path: `/request/${type}` },
+            ]),
+          ),
+        }}
+      />
       <PageHeader eyebrow="Request" title={def.title} intro={def.lead} />
       <div className="mt-8 grid gap-8 lg:grid-cols-[1.6fr_1fr]">
         <RequestForm def={def} />

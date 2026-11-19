@@ -2,38 +2,10 @@ import { Analytics } from "@/components/Analytics";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { MobileCallBar } from "@/components/MobileCallBar";
-import { facts, site } from "@/lib/site";
+import { localBusiness, toJsonLd } from "@/lib/structuredData";
 
-/**
- * LocalBusiness structured data. No street address is published: without a
- * staffed storefront the business is described by the area it serves.
- */
-const localBusiness = {
-  "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  "@id": `${site.url}/#business`,
-  name: site.name,
-  url: site.url,
-  telephone: site.phone.e164,
-  description: site.description,
-  address: {
-    "@type": "PostalAddress",
-    addressLocality: site.base.city,
-    addressRegion: site.base.region,
-    addressCountry: "US",
-  },
-  ...(facts.serviceAreas.length > 0
-    ? { areaServed: facts.serviceAreas.map((name) => ({ "@type": "City", name })) }
-    : {}),
-  openingHoursSpecification: [
-    {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: site.hours.days,
-      opens: site.hours.opens,
-      closes: site.hours.closes,
-    },
-  ],
-};
+// Business structured data on every public page. See lib/structuredData.ts.
+const businessJsonLd = toJsonLd(localBusiness());
 
 export default function SiteLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
@@ -48,7 +20,7 @@ export default function SiteLayout({ children }: Readonly<{ children: React.Reac
       <main id="main">{children}</main>
       <Footer />
       <MobileCallBar />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusiness) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: businessJsonLd }} />
       <Analytics />
     </>
   );

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { breadcrumbs, serviceData, toJsonLd } from "@/lib/structuredData";
 import { PhoneLink } from "@/components/PhoneLink";
 import { RequestForm } from "@/components/RequestForm";
 import { PageHeader, container } from "@/components/ui";
@@ -32,6 +33,18 @@ export default async function ServicePage({ params }: Props) {
 
   return (
     <div className={`${container} py-10 lg:py-14`}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: toJsonLd([
+            serviceData(service),
+            breadcrumbs([
+              { name: "Home", path: "/" },
+              { name: service.eyebrow, path: `/${service.slug}` },
+            ]),
+          ]),
+        }}
+      />
       <PageHeader eyebrow={service.eyebrow} title={service.title} intro={service.intro} />
 
       {/* Customers arrive needing it now, so the form is on the page: no extra click. */}
