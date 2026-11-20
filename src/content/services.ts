@@ -13,10 +13,17 @@ export type Service = {
   request: RequestType;
   /** "What to send us" checklist: specific to each service. */
   send: string[];
+  /**
+   * A heading that ends in "?" is a question: its body must open with a
+   * direct answer, because the pair also becomes the page's FAQ markup.
+   */
   sections: { heading: string; body: string }[];
 };
 
 const brands = site.supplyBrands.join(", ");
+/** "A, B and C" */
+const listed = (items: readonly string[]) =>
+  items.length > 1 ? `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}` : items.join("");
 const areas =
   facts.serviceAreas.length > 0
     ? `We currently offer repair service in ${facts.serviceAreas.join(", ")}.`
@@ -41,15 +48,15 @@ export const services: Service[] = [
     ],
     sections: [
       {
-        heading: "OEM, remanufactured or generic",
+        heading: "What's the difference between OEM, remanufactured and generic toner?",
         body: "OEM cartridges are made by the printer's manufacturer. Remanufactured cartridges are original shells that have been cleaned, refilled and tested. Generic cartridges are new, built by a third party. We can quote any of the three side by side so you can weigh price against preference.",
       },
       {
-        heading: "Brands we supply",
-        body: `${brands} and others. If your brand isn't listed, ask: the list is not exhaustive.`,
+        heading: "Which toner brands do you supply?",
+        body: `We supply ${listed(site.supplyBrands)} and others. If your brand isn't listed, ask: the list is not exhaustive.`,
       },
       ...(facts.supplyWarranty
-        ? [{ heading: "Warranty", body: facts.supplyWarranty }]
+        ? [{ heading: "Is there a warranty on your cartridges?", body: facts.supplyWarranty }]
         : []),
     ],
   },
@@ -70,18 +77,18 @@ export const services: Service[] = [
       "The ZIP code where the equipment is",
     ],
     sections: [
-      { heading: "Where we service", body: areas },
+      { heading: "Which areas do you service?", body: areas },
       {
-        heading: "Repair or replace?",
-        body: "Sometimes a repair costs more than the machine is worth. We'll evaluate the printer's condition and tell you plainly whether it's worth fixing. If it isn't, we can suggest new or used replacements.",
+        heading: "Should I repair or replace my printer?",
+        body: "It depends on whether the repair costs more than the machine is worth. We'll evaluate the printer's condition and tell you plainly whether it's worth fixing. If it isn't, we can suggest new or used replacements.",
       },
       {
-        heading: "Before any work starts",
+        heading: "Will I know the cost before any work starts?",
         body: facts.diagnosticFee
-          ? `${facts.diagnosticFee}. Parts and labor are quoted before work begins, and nothing proceeds until you approve it.`
-          : "Diagnostics, parts and labor are quoted before work begins, and nothing proceeds until you approve it.",
+          ? `Yes. ${facts.diagnosticFee}. Parts and labor are quoted before work begins, and nothing proceeds until you approve it.`
+          : "Yes. Diagnostics, parts and labor are quoted before work begins, and nothing proceeds until you approve it.",
       },
-      ...(facts.repairWarranty ? [{ heading: "Repair warranty", body: facts.repairWarranty }] : []),
+      ...(facts.repairWarranty ? [{ heading: "Do you guarantee your repairs?", body: facts.repairWarranty }] : []),
       ...(facts.certifications.length > 0
         ? [{ heading: "Our technicians", body: `Our technicians hold: ${facts.certifications.join(", ")}.` }]
         : []),
@@ -106,11 +113,11 @@ export const services: Service[] = [
     ],
     sections: [
       {
-        heading: "Direct thermal or thermal transfer",
+        heading: "Do I need direct thermal or thermal transfer labels?",
         body: "Direct thermal labels darken with heat and need no ribbon; they suit short-lived uses such as shipping labels. Thermal transfer uses a ribbon to print onto the label and lasts longer, which matters for inventory, assets and harsh conditions.",
       },
       {
-        heading: "Choosing a ribbon",
+        heading: "Which thermal ribbon do I need: wax, wax-resin or resin?",
         body: "Wax ribbons suit paper labels. Wax-resin holds up better against smudging and scratching. Resin is for synthetic labels that face heat, moisture or chemicals. If you're unsure, a photo of the current ribbon box usually answers it.",
       },
     ],
@@ -134,13 +141,13 @@ export const services: Service[] = [
     ],
     sections: [
       {
-        heading: "Recycling and buyback are separate",
+        heading: "What's the difference between toner recycling and buyback?",
         body: "Used or empty cartridges are handled through recycling. Unused toner, especially in sealed boxes, may be eligible for buyback. Not every cartridge qualifies for either.",
       },
-      ...(facts.recyclingTerms ? [{ heading: "Fees and credit", body: facts.recyclingTerms }] : []),
+      ...(facts.recyclingTerms ? [{ heading: "Do you pay for used or unused toner?", body: facts.recyclingTerms }] : []),
       {
-        heading: "Please don't ship first",
-        body: "Wait until we've confirmed eligibility and the arrangements with you before sending anything.",
+        heading: "Can I ship my cartridges to you right away?",
+        body: "Please don't ship until we've confirmed eligibility and the arrangements with you.",
       },
     ],
   },
@@ -163,14 +170,14 @@ export const services: Service[] = [
     ],
     sections: [
       {
-        heading: "More than a source of supplies",
-        body: `We've supplied and serviced office printing equipment for ${site.yearsInBusiness}. The same people who quote your toner can help when a machine goes down.`,
+        heading: "Do you also service the printers?",
+        body: `Yes. We've supplied and serviced office printing equipment for ${site.yearsInBusiness}. The same people who quote your toner can help when a machine goes down.`,
       },
       {
-        heading: "Repeat orders",
+        heading: "How do repeat orders work?",
         body: "Once we know what you use, reordering is a short form or a phone call. There's no portal to learn and no login to remember.",
       },
-      ...(facts.paymentTerms ? [{ heading: "Payment terms", body: facts.paymentTerms }] : []),
+      ...(facts.paymentTerms ? [{ heading: "What payment terms do you offer?", body: facts.paymentTerms }] : []),
     ],
   },
   {
@@ -191,11 +198,11 @@ export const services: Service[] = [
     ],
     sections: [
       {
-        heading: "Brands we offer",
-        body: `${site.equipmentBrands.join(", ")}.`,
+        heading: "Which printer and copier brands do you sell?",
+        body: `We offer new and used equipment from ${listed(site.equipmentBrands)}.`,
       },
       {
-        heading: "Not sure whether to replace?",
+        heading: "Should I replace my printer or repair it?",
         body: "If your current machine is giving you trouble, we can evaluate it first and tell you whether a repair makes more sense than a replacement.",
       },
     ],

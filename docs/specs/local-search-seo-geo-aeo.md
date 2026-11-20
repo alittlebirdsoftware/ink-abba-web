@@ -1,6 +1,6 @@
 # Spec: Local search, SEO, GEO and AEO improvements
 
-Status: Phase 1 built (2026-11-19); Phase 2 onward proposed · Written 2026-11-19 · Owner: development, with inputs from Brian (business owner)
+Status: Phase 1 built (2026-11-19); Phase 2 built except GEO-2 (2026-11-20); GEO-2 and Phase 3 onward wait on Brian · Written 2026-11-19 · Owner: development, with inputs from Brian (business owner)
 
 ## 1. Background
 
@@ -78,12 +78,12 @@ The app has no test runner yet. The existing tests (`scripts/sheet.test.mjs`) us
   - any page HTML, structured data block or `llms.txt` contains an email address, `streetAddress`, `postalCode` or `"geo"`;
   - a page's FAQ markup doesn't match its visible question headings.
 - Add `"check:seo": "node --test scripts/check-seo.test.mjs"` to `package.json`. Run it against the dev server before each release, and against the live site after.
-- The canonical-tag and preview-image checks are marked `todo` until SEO-1 and SEO-2 ship in Phase 2. They run and report, but don't fail the suite. Remove the `todo` when each item ships.
+- Phase 2 added checks for the preview image's size, alt text and large-card setting, for FAQ answers appearing on the page, and for at least 2 questions per service page, each answered in 30 words or fewer.
 - Re-run PageSpeed Insights (mobile) on the home page and one service page after each release, and record the scores in `reports/`.
 
 ## 4. Phase 2: page content and sharing
 
-What visitors and link previews see. SEO-1, SEO-2, AEO-1 and AEO-2 can start now. GEO-2 needs details from Brian (§5).
+What visitors and link previews see. SEO-1, SEO-2, AEO-1 and AEO-2 were built on 2026-11-20 (the per-service preview images were skipped). GEO-2 is not started: it needs details from Brian (§5).
 
 ### SEO-1. Official-address tag on the home page
 - **Problem:** `src/app/(site)/page.tsx` exports no metadata, so the home page is the only page without `<link rel="canonical">`.
@@ -118,12 +118,13 @@ What visitors and link previews see. SEO-1, SEO-2, AEO-1 and AEO-2 can start now
 | recycling | Recycling and buyback are separate | What's the difference between toner recycling and buyback? | None |
 | recycling | Fees and credit *(when set)* | Do you pay for used or unused toner? | None |
 | recycling | Please don't ship first | Can I ship my cartridges to you right away? | Start with "Please don't ship until we've confirmed …" |
+| business-accounts | More than a source of supplies | Do you also service the printers? | Start with "Yes." Changed while building, so this page has 2 questions before payment terms are set |
 | business-accounts | Repeat orders | How do repeat orders work? | None |
 | business-accounts | Payment terms *(when set)* | What payment terms do you offer? | None |
 | equipment | Brands we offer | Which printer and copier brands do you sell? | Write it as a sentence: "We offer …" |
 | equipment | Not sure whether to replace? | Should I replace my printer or repair it? | None |
 
-- Headings that aren't questions stay as they are, for example "More than a source of supplies".
+- Headings that aren't questions stay as they are, for example "Our technicians".
 - **Done when:** at least 2 question headings on every service page, and every question body's first sentence works as a stand-alone answer.
 
 ### AEO-2. FAQ markup generated from the question headings

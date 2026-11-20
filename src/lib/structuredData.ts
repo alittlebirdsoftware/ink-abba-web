@@ -4,7 +4,7 @@
  *
  * InkAbba has no storefront: the business is placed by city and service area
  * only. Never add streetAddress, postalCode or geo here, and never the email.
- * (docs/specs/local-search-seo-geo-aeo.md, SD-1 to SD-3)
+ * (docs/specs/local-search-seo-geo-aeo.md, SD-1 to SD-3 and AEO-2)
  */
 import { services, type Service } from "@/content/services";
 import { facts, site } from "@/lib/site";
@@ -78,6 +78,30 @@ export function serviceData(service: Service): Json {
     url,
     provider: { "@id": businessId },
     ...areaServed(),
+  };
+}
+
+/** The sections whose heading is a question. They are shown on the page, so they can be marked up. */
+function questions(service: Service): { heading: string; body: string }[] {
+  return service.sections.filter((section) => section.heading.endsWith("?"));
+}
+
+/**
+ * FAQ markup for a service page, built from the same sections the page shows,
+ * so the two can never differ. Null when the page asks no questions.
+ */
+export function faqPage(service: Service): Json | null {
+  const asked = questions(service);
+  if (asked.length === 0) return null;
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "@id": `${absolute(`/${service.slug}`)}#faq`,
+    mainEntity: asked.map((section) => ({
+      "@type": "Question",
+      name: section.heading,
+      acceptedAnswer: { "@type": "Answer", text: section.body },
+    })),
   };
 }
 

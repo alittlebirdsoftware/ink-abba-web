@@ -4,8 +4,6 @@
 //   npm run check:seo                                   # dev server on :3477
 //   SITE_CHECK_URL=https://… npm run check:seo          # any deployed copy
 //
-// Tests marked `todo` cover work planned for Phase 2. They run and report,
-// but don't fail the suite until that work ships and the `todo` is removed.
 import test from "node:test";
 import assert from "node:assert/strict";
 
@@ -69,15 +67,19 @@ test("every page has a title and a description", () => {
   }
 });
 
-test("every page has exactly one canonical tag", { todo: "Phase 2, SEO-1: the home page has none yet" }, () => {
+test("every page has exactly one canonical tag", () => {
   for (const [path, { body }] of pages) {
     assert.equal(all(body, /<link rel="canonical" href="([^"]+)"/g).length, 1, path);
   }
 });
 
-test("every page has a preview image", { todo: "Phase 2, SEO-2" }, () => {
+test("every page has a large preview image, with its size and alt text", () => {
   for (const [path, { body }] of pages) {
-    assert.ok(/<meta property="og:image" content="https?:\/\/[^"]+"/.test(body), path);
+    assert.ok(/<meta property="og:image" content="https?:\/\/[^"]+"/.test(body), `${path}: og:image`);
+    assert.ok(/<meta property="og:image:width" content="1200"/.test(body), `${path}: og:image:width`);
+    assert.ok(/<meta property="og:image:height" content="630"/.test(body), `${path}: og:image:height`);
+    assert.ok(/<meta property="og:image:alt" content="[^"]{10,}"/.test(body), `${path}: og:image:alt`);
+    assert.ok(/<meta name="twitter:card" content="summary_large_image"/.test(body), `${path}: twitter:card`);
   }
 });
 
@@ -135,14 +137,31 @@ test("request pages have breadcrumbs that match the page heading", () => {
   }
 });
 
-test("FAQ markup matches the questions shown on the page", () => {
+test("FAQ markup matches the questions and answers shown on the page", () => {
   for (const [path, { body }] of pages) {
     const faq = jsonLd(body).find((n) => n["@type"] === "FAQPage");
-    if (!faq) continue; // Phase 2, AEO-2 adds these.
+    if (!faq) continue;
     const shown = all(body, /<h[23][^>]*>([\s\S]*?)<\/h[23]>/g).map(text).filter((h) => h.endsWith("?"));
     const marked = faq.mainEntity.map((q) => q.name);
     assert.deepEqual(marked, shown.filter((q) => marked.includes(q)), `${path}: order`);
-    for (const q of marked) assert.ok(shown.includes(q), `${path}: "${q}" is marked up but not shown`);
+    // Page text without the structured data, which repeats the answers.
+    const visible = text(body.replace(/<script[\s\S]*?<\/script>/g, ""));
+    for (const q of faq.mainEntity) {
+      assert.ok(shown.includes(q.name), `${path}: "${q.name}" is marked up but not shown`);
+      assert.ok(visible.includes(q.acceptedAnswer.text), `${path}: the answer to "${q.name}" is not shown`);
+    }
+  }
+});
+
+test("every service page asks at least two questions, each answered in its first sentence", () => {
+  const servicePages = [...pages].filter(([, { body }]) => jsonLd(body).some((n) => n["@type"] === "Service"));
+  for (const [path, { body }] of servicePages) {
+    const faq = jsonLd(body).find((n) => n["@type"] === "FAQPage");
+    assert.ok(faq?.mainEntity.length >= 2, `${path}: at least 2 questions`);
+    for (const q of faq.mainEntity) {
+      const first = q.acceptedAnswer.text.split(/(?<=[.!?])\s/)[0];
+      assert.ok(first.split(/\s+/).length <= 30, `${path}: "${q.name}" opens with ${first.split(/\s+/).length} words`);
+    }
   }
 });
 

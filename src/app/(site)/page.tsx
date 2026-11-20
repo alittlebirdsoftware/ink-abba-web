@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { PhoneLink } from "@/components/PhoneLink";
@@ -6,6 +7,9 @@ import { ButtonLink, Eyebrow, container } from "@/components/ui";
 import { services } from "@/content/services";
 import { getGoogleReviews } from "@/lib/server/reviews";
 import { facts, replyPromise, site } from "@/lib/site";
+
+// Title and description come from the root layout; this adds the one tag the home page lacked.
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 const paths = [
   {

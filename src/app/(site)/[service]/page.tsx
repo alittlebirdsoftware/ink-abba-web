@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { breadcrumbs, serviceData, toJsonLd } from "@/lib/structuredData";
+import { breadcrumbs, faqPage, serviceData, toJsonLd } from "@/lib/structuredData";
 import { PhoneLink } from "@/components/PhoneLink";
 import { RequestForm } from "@/components/RequestForm";
 import { PageHeader, container } from "@/components/ui";
@@ -30,6 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ServicePage({ params }: Props) {
   const service = getService((await params).service);
   if (!service) notFound();
+  const faq = faqPage(service);
 
   return (
     <div className={`${container} py-10 lg:py-14`}>
@@ -42,6 +43,7 @@ export default async function ServicePage({ params }: Props) {
               { name: "Home", path: "/" },
               { name: service.eyebrow, path: `/${service.slug}` },
             ]),
+            ...(faq ? [faq] : []),
           ]),
         }}
       />
